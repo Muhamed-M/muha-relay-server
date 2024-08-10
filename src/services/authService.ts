@@ -50,7 +50,7 @@ export const signIn = async ({ identifier, password }: SignInPayload) => {
 
     return {
       token,
-      user,
+      ...user,
     };
   } else {
     throw new ApiError(401, 'Incorrect password!');
