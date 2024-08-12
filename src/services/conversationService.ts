@@ -58,3 +58,47 @@ export const getConversations = async (userId: number) => {
 
   return conversations;
 };
+
+export const getConversation = async (conversationId: number, userId: number) => {
+  const conversation = await prisma.conversation.findFirst({
+    where: {
+      id: conversationId,
+      members: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+    include: {
+      members: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+      },
+      messages: {
+        select: {
+          id: true,
+          content: true,
+          senderId: true,
+          createdAt: true,
+          sender: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
+    },
+  });
+
+  return conversation;
+};
