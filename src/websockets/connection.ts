@@ -1,7 +1,12 @@
 import { serve, type ServerWebSocket } from 'bun';
 
+interface ClientData {
+  ws: ServerWebSocket<undefined>;
+  conversationId: number;
+}
+
 export function setupWebSocketServer(port: number = 8080) {
-  const clients: Set<ServerWebSocket<undefined>> = new Set();
+  const clients: Map<ServerWebSocket<undefined>, ClientData> = new Map();
 
   serve({
     port,
@@ -14,16 +19,27 @@ export function setupWebSocketServer(port: number = 8080) {
     websocket: {
       open(ws: ServerWebSocket<undefined>) {
         console.log('New WebSocket connection established');
-        clients.add(ws);
+        clients.set(ws, { ws, conversationId: 0 });
       },
       message(ws, message) {
-        console.log('Received message:', message);
+        const parsedMessage = JSON.parse(message.toString());
+        console.log(parsedMessage);
 
-        // Broadcast the message to all connected clients
-        for (const client of clients) {
-          // Ensure the client is open and not the sender
-          if (client !== ws && client.readyState === 1) {
-            client.send(message);
+        // conversation opened is "join"
+        if (parsedMessage.type === 'join') {
+          // Assign conversationId to the client
+          clients.get(ws)!.conversationId = parsedMessage.conversationId;
+        } else {
+          // Broadcast the message to all clients in the same conversation
+          for (const clientData of clients.values()) {
+            if (
+              clientData.conversationId == parsedMessage.conversationId &&
+              clientData.ws !== ws &&
+              clientData.ws.readyState === 1
+            ) {
+              console.log('mathced conversaiton');
+              clientData.ws.send(message);
+            }
           }
         }
       },
