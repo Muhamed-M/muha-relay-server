@@ -15,5 +15,13 @@ export const createMessage = async ({ content, senderId, conversationId }: Messa
       senderId,
       conversationId,
     },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+    },
   });
 };

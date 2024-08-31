@@ -23,7 +23,6 @@ export function setupWebSocketServer(port: number = 8080) {
       },
       message(ws, message) {
         const parsedMessage = JSON.parse(message.toString());
-        console.log(parsedMessage);
 
         // conversation opened is "join"
         if (parsedMessage.type === 'join') {
@@ -37,7 +36,6 @@ export function setupWebSocketServer(port: number = 8080) {
               clientData.ws !== ws &&
               clientData.ws.readyState === 1
             ) {
-              console.log('mathced conversaiton');
               clientData.ws.send(message);
             }
           }
