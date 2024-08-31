@@ -5,7 +5,6 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const createConversation = async ({ name, isGroup, usersIds }: ConversationPayload) => {
-  console.log(name, isGroup, usersIds);
   if (usersIds.length !== 2 && !isGroup) {
     throw new ApiError(400, 'Direct conversation must have exactly two users');
   }
