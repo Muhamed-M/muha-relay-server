@@ -4,8 +4,9 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const createConversation = async ({ name, isGroup, userIds }: ConversationPayload) => {
-  if (userIds.length !== 2) {
+export const createConversation = async ({ name, isGroup, usersIds }: ConversationPayload) => {
+  console.log(name, isGroup, usersIds);
+  if (usersIds.length !== 2 && !isGroup) {
     throw new ApiError(400, 'Direct conversation must have exactly two users');
   }
 
@@ -21,7 +22,7 @@ export const createConversation = async ({ name, isGroup, userIds }: Conversatio
 
     // Step 2: Add the users to the conversation
     await prisma.conversationMember.createMany({
-      data: userIds.map((userId) => ({
+      data: usersIds.map((userId) => ({
         conversationId: newConversation.id,
         userId: userId,
       })),

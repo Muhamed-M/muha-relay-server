@@ -3,6 +3,7 @@ import { createConversation, getConversations, getConversation } from '../servic
 
 export const createConversationController = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    req.body.usersIds.push(req.user.id); // Add the logged user to the conversation
     const conversation = await createConversation(req.body);
     res.status(201).json({
       message: 'Conversation created successfully!',

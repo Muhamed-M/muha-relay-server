@@ -3,6 +3,7 @@ import express from 'express';
 import authRoutes from './authRoutes';
 import conversationRoutes from './conversationRoutes';
 import messageRoutes from './messageRoutes';
+import userRoutes from './userRoutes';
 // Import middlewares
 import { protect } from '../middlewares/auth';
 const router = express.Router();
@@ -13,5 +14,7 @@ router.use('/api/auth', authRoutes);
 router.use('/api/conversations', protect, conversationRoutes);
 // Messages
 router.use('/api/messages', protect, messageRoutes);
+// Users
+router.use('/api/users', protect, userRoutes);
 
 export default router;
