@@ -53,6 +53,17 @@ export const getConversations = async (userId: number) => {
           },
         },
       },
+      messages: {
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 1,
+      },
     },
   });
 
