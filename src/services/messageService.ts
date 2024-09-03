@@ -25,3 +25,38 @@ export const createMessage = async ({ content, senderId, conversationId }: Messa
     },
   });
 };
+
+export const getMessages = async (conversationId: number, cursor?: number) => {
+  const messages = await prisma.message.findMany({
+    select: {
+      id: true,
+      content: true,
+      senderId: true,
+      createdAt: true,
+      sender: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+    },
+    where: {
+      conversationId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 30,
+    ...(cursor && {
+      cursor: { id: cursor },
+      skip: 1, // Skip the cursor itself
+    }),
+  });
+
+  // Reverse the order of messages to be chronological
+  if (messages) {
+    messages.reverse();
+  }
+
+  return messages;
+};

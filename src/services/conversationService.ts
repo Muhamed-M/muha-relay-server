@@ -91,23 +91,6 @@ export const getConversation = async (conversationId: number, userId: number) =>
           },
         },
       },
-      messages: {
-        select: {
-          id: true,
-          content: true,
-          senderId: true,
-          createdAt: true,
-          sender: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
     },
   });
 

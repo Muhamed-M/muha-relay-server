@@ -1,7 +1,7 @@
 import express from 'express';
-import { createMessageController } from '../controllers/messageController';
+import { createMessageController, getMessagesController } from '../controllers/messageController';
 const router = express.Router();
 
-router.route('/').post(createMessageController);
+router.route('/').post(createMessageController).get(getMessagesController);
 
 export default router;
