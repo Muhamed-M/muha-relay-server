@@ -53,18 +53,32 @@ export const getConversations = async (userId: number) => {
           },
         },
       },
-      messages: {
+      _count: {
         select: {
-          id: true,
-          content: true,
-          createdAt: true,
+          messages: {
+            where: {
+              receipts: {
+                some: {
+                  userId: userId,
+                  readAt: null, // Only count messages that are unread by this user
+                },
+              },
+            },
+          },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: 1,
       },
     },
+    orderBy: [
+      {
+        lastMessageAt: {
+          sort: 'desc',
+          nulls: 'last', // If null, put them at the end based on the next field
+        },
+      },
+      {
+        createdAt: 'desc', // Fallback to createdAt if lastMessageAt is null
+      },
+    ],
   });
 
   return conversations;

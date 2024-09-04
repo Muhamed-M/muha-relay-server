@@ -9,20 +9,53 @@ export const createMessage = async ({ content, senderId, conversationId }: Messa
     throw new ApiError(400, 'Invalid message payload');
   }
 
-  return prisma.message.create({
-    data: {
-      content,
-      senderId,
-      conversationId,
-    },
-    include: {
-      sender: {
-        select: {
-          id: true,
-          username: true,
+  return await prisma.$transaction(async (tx) => {
+    // 1. Create the new message
+    const createdMessage = await tx.message.create({
+      data: {
+        content,
+        senderId,
+        conversationId,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+          },
         },
       },
-    },
+    });
+
+    // 2. Fetch all conversation members except the sender
+    const members = await tx.conversationMember.findMany({
+      where: {
+        conversationId,
+        userId: { not: senderId },
+      },
+    });
+
+    // 3. Create a MessageReceipt for each member (except sender)
+    const messageReceipts = members.map((member) => ({
+      messageId: createdMessage.id,
+      userId: member.userId,
+      readAt: null, // Not read initially
+    }));
+
+    await tx.messageReceipt.createMany({
+      data: messageReceipts,
+    });
+
+    // 4. Update conversation with lastMessageContent and lastMessageAt
+    await tx.conversation.update({
+      where: { id: conversationId },
+      data: {
+        lastMessageContent: createdMessage.content,
+        lastMessageAt: createdMessage.createdAt,
+      },
+    });
+
+    return createdMessage;
   });
 };
 
