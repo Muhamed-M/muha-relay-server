@@ -2,7 +2,7 @@ import express from 'express';
 import routes from './routes';
 import errorHandler from './middlewares/errorHandler';
 import cors from 'cors';
-import { setupWebSocketServer } from './websockets/connection';
+import { setupWebSocketServer } from './websockets';
 
 const app = express();
 const port = Bun.env.PORT || 5000;
