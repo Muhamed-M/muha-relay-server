@@ -6,7 +6,7 @@ interface ClientData {
   conversationId: number;
 }
 
-export function handleJoin(
+export function handleConversationEnterLeave(
   ws: ServerWebSocket<undefined>,
   message: any,
   clients: Map<ServerWebSocket<undefined>, ClientData>

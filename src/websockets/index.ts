@@ -1,5 +1,5 @@
 import { serve, type ServerWebSocket } from 'bun';
-import { handleMessage, handleJoin, broadcastNotification } from './messageHandler';
+import { handleMessage, broadcastNotification, handleConversationEnterLeave } from './messageHandler';
 import { addClient, removeClient, getClients } from './clientManager';
 
 export function setupWebSocketServer(port: number = 8080) {
@@ -21,8 +21,8 @@ export function setupWebSocketServer(port: number = 8080) {
       message(ws, message) {
         const parsedMessage = JSON.parse(message.toString());
 
-        if (parsedMessage.type === 'join') {
-          handleJoin(ws, parsedMessage, clients);
+        if (parsedMessage.type === 'join' || parsedMessage.type === 'left') {
+          handleConversationEnterLeave(ws, parsedMessage, clients);
         } else {
           handleMessage(ws, parsedMessage, clients);
           broadcastNotification(ws, parsedMessage, clients);
