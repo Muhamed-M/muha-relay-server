@@ -35,5 +35,5 @@ export function setupWebSocketServer(port: number = 8080) {
     },
   });
 
-  console.log(`WebSocket server is running on ws://localhost:${port}`);
+  console.log(`WebSocket server is running on ws://192.168.1.6:${port}`);
 }
