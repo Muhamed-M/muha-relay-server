@@ -1,10 +1,10 @@
-import type { ConversationPayload } from '../types/conversationTypes';
+import type { CreateConversationPayload, EditConversationPayload } from '../types/conversationTypes';
 import ApiError from '../utils/ApiError';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const createConversation = async ({ name, isGroup, usersIds }: ConversationPayload) => {
+export const createConversation = async ({ name, isGroup, usersIds }: CreateConversationPayload) => {
   if (usersIds.length !== 2 && !isGroup) {
     throw new ApiError(400, 'Direct conversation must have exactly two users');
   }
@@ -109,4 +109,53 @@ export const getConversation = async (conversationId: number, userId: number) =>
   });
 
   return conversation;
+};
+
+export const updateGroupConversation = async ({ conversationId, name }: EditConversationPayload) => {
+  if (!name) {
+    throw new ApiError(400, 'Invalid payload for group edit');
+  }
+
+  const updateGroupConversation = await prisma.conversation.update({
+    where: {
+      id: conversationId,
+    },
+    data: {
+      name: name,
+    },
+  });
+
+  return updateGroupConversation;
+};
+
+export const updateGroupMembers = async ({ conversationId, usersIds }: EditConversationPayload) => {
+  if (!usersIds || usersIds?.length === 0) {
+    throw new ApiError(400, 'Invalid payload for group members update');
+  }
+
+  const updateGroupMembers = await prisma.conversationMember.createMany({
+    data: usersIds.map((userId) => ({
+      conversationId: conversationId,
+      userId: userId,
+    })),
+  });
+
+  return updateGroupMembers;
+};
+
+export const deleteGroupMembers = async ({ conversationId, usersIds }: EditConversationPayload) => {
+  if (!usersIds) {
+    throw new ApiError(400, 'Invalid payload for group members delete');
+  }
+
+  const updateGroupMembers = await prisma.conversationMember.deleteMany({
+    where: {
+      conversationId: conversationId,
+      userId: {
+        in: usersIds,
+      },
+    },
+  });
+
+  return updateGroupMembers;
 };

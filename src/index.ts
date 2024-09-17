@@ -3,9 +3,19 @@ import routes from './routes';
 import errorHandler from './middlewares/errorHandler';
 import cors from 'cors';
 import { setupWebSocketServer } from './websockets';
+import logger from './utils/logger';
 
 const app = express();
 const port = Bun.env.PORT || 5000;
+
+// Force https
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
+    return res.redirect('https://' + req.hostname + req.url);
+  }
+  next();
+});
+
 app.use(express.json());
 // Configure CORS
 app.use(
@@ -28,5 +38,5 @@ if (Bun.env.WS_PORT) {
 }
 
 app.listen(port, () => {
-  console.log(`Listening on port ${port}...`);
+  logger.info(`Listening on port ${port}...`);
 });

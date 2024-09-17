@@ -40,6 +40,7 @@ export function broadcastNotification(
     conversationId: message.conversationId,
     lastMessageContent: message.content,
     lastMessageAt: new Date(),
+    senderId: message.senderId,
   });
 
   for (const clientData of clients.values()) {

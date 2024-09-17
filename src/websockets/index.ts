@@ -1,10 +1,10 @@
 import { serve, type ServerWebSocket } from 'bun';
 import { handleMessage, broadcastNotification, handleConversationEnterLeave } from './messageHandler';
 import { addClient, removeClient, getClients } from './clientManager';
+import logger from '../utils/logger';
 
 export function setupWebSocketServer(port: number = 8080) {
   const clients = getClients();
-
   serve({
     port,
     fetch(req, server) {
@@ -15,7 +15,7 @@ export function setupWebSocketServer(port: number = 8080) {
     },
     websocket: {
       open(ws: ServerWebSocket<undefined>) {
-        console.log('New WebSocket connection established');
+        logger.info('New WebSocket connection established');
         addClient(ws);
       },
       message(ws, message) {
@@ -29,11 +29,11 @@ export function setupWebSocketServer(port: number = 8080) {
         }
       },
       close(ws: ServerWebSocket<undefined>) {
-        console.log('WebSocket connection closed');
+        logger.info('WebSocket connection closed');
         removeClient(ws);
       },
     },
   });
 
-  console.log(`WebSocket server is running on ws://192.168.1.6:${port}`);
+  logger.info(`WebSocket server is running on port: ${port}`);
 }
