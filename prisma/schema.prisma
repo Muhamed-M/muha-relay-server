@@ -7,19 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ActivityStatus {
+  online
+  offline
+  away
+}
+
+enum UserStatus {
+  active
+  deleted
+  deactivated
+}
+
 model User {
-  id            Int                  @id @default(autoincrement())
-  email         String               @unique
-  username      String               @unique
-  password      String
-  firstName     String
-  lastName      String?
-  phoneNumber   String?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  conversations ConversationMember[]
-  messages      Message[]
-  receipts      MessageReceipt[]
+  id             Int                  @id @default(autoincrement())
+  email          String               @unique
+  username       String               @unique
+  password       String
+  firstName      String
+  lastName       String?
+  avatar         String?
+  phoneNumber    String?
+  activityStatus ActivityStatus       @default(offline)
+  status         UserStatus           @default(active)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  conversations  ConversationMember[]
+  messages       Message[]
+  receipts       MessageReceipt[]
 }
 
 model Conversation {

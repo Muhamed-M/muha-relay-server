@@ -49,6 +49,7 @@ export const getConversations = async (userId: number) => {
             select: {
               id: true,
               username: true,
+              activityStatus: true,
             },
           },
         },
@@ -101,6 +102,7 @@ export const getConversation = async (conversationId: number, userId: number) =>
             select: {
               id: true,
               username: true,
+              activityStatus: true,
             },
           },
         },

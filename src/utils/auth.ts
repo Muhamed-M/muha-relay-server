@@ -9,3 +9,7 @@ if (!jwtSecret) {
 export const signJwtToken = (payload: string | object | Buffer): string => {
   return jwt.sign(payload, jwtSecret, { expiresIn: '7d' });
 };
+
+export const verifyJwtToken = (token: string): string | object => {
+  return jwt.verify(token, jwtSecret);
+};

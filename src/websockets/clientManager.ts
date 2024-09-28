@@ -1,17 +1,13 @@
 import type { ServerWebSocket } from 'bun';
+import type { WebSocketData, ClientData } from '../types/websocketTypes';
 
-interface ClientData {
-  ws: ServerWebSocket<undefined>;
-  conversationId: number;
+const clients: Map<ServerWebSocket<WebSocketData>, ClientData> = new Map();
+
+export function addClient(ws: ServerWebSocket<WebSocketData>) {
+  clients.set(ws, { ws, conversationId: 0, userId: 0 });
 }
 
-const clients: Map<ServerWebSocket<undefined>, ClientData> = new Map();
-
-export function addClient(ws: ServerWebSocket<undefined>) {
-  clients.set(ws, { ws, conversationId: 0 });
-}
-
-export function removeClient(ws: ServerWebSocket<undefined>) {
+export function removeClient(ws: ServerWebSocket<WebSocketData>) {
   clients.delete(ws);
 }
 
@@ -19,8 +15,14 @@ export function getClients() {
   return clients;
 }
 
-export function setConversationId(ws: ServerWebSocket<undefined>, conversationId: number) {
+export function setConversationId(ws: ServerWebSocket<WebSocketData>, conversationId: number) {
   if (clients.has(ws)) {
     clients.get(ws)!.conversationId = conversationId;
+  }
+}
+
+export function setUserId(ws: ServerWebSocket<WebSocketData>, userId: number) {
+  if (clients.has(ws)) {
+    clients.get(ws)!.userId = userId;
   }
 }

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ActivityStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -38,4 +38,15 @@ export const findUsersBySearch = async (search: string, loggedUserId: number) =>
   });
 
   return users;
+};
+
+export const updateUserActivityStatus = async (userId: number, activityStatus: ActivityStatus) => {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      activityStatus,
+    },
+  });
 };
