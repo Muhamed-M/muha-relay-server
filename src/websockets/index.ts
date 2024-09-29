@@ -4,6 +4,7 @@ import {
   broadcastNotification,
   handleConversationEnterLeave,
   handleUserActivity,
+  broadcastTypingToConversation,
 } from './messageHandler';
 import { addClient, removeClient, getClients } from './clientManager';
 import logger from '../utils/logger';
@@ -52,11 +53,19 @@ export function setupWebSocketServer(port: number = 8080) {
       message(ws, message) {
         const parsedMessage = JSON.parse(message.toString());
 
-        if (parsedMessage.type === 'join' || parsedMessage.type === 'left') {
-          handleConversationEnterLeave(ws, parsedMessage, clients);
-        } else {
-          handleMessage(ws, parsedMessage, clients);
-          broadcastNotification(ws, parsedMessage, clients);
+        switch (parsedMessage.type) {
+          case 'join':
+          case 'left':
+            handleConversationEnterLeave(ws, parsedMessage, clients);
+            break;
+          case 'message':
+            handleMessage(ws, parsedMessage, clients);
+            broadcastNotification(ws, parsedMessage, clients);
+            break;
+          case 'user-typing':
+          case 'user-stopped-typing':
+            broadcastTypingToConversation(ws, parsedMessage, clients);
+            break;
         }
       },
       async close(ws: ServerWebSocket<WebSocketData>) {

@@ -75,3 +75,19 @@ export function broadcastNotification(
     }
   }
 }
+
+export function broadcastTypingToConversation(
+  ws: ServerWebSocket<WebSocketData>,
+  message: any,
+  clients: Map<ServerWebSocket<WebSocketData>, ClientData>
+) {
+  for (const clientData of clients.values()) {
+    if (
+      clientData.conversationId === message.conversationId &&
+      clientData.ws !== ws &&
+      clientData.ws.readyState === 1
+    ) {
+      clientData.ws.send(JSON.stringify({ type: message.type, username: message.username }));
+    }
+  }
+}

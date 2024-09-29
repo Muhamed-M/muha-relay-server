@@ -24,6 +24,12 @@ export const createMessage = async ({ content, senderId, conversationId }: Messa
             username: true,
           },
         },
+        receipts: {
+          select: {
+            userId: true,
+            readAt: true,
+          },
+        },
       },
     });
 
@@ -70,6 +76,12 @@ export const getMessages = async (conversationId: number, cursor?: number) => {
         select: {
           id: true,
           username: true,
+        },
+      },
+      receipts: {
+        select: {
+          userId: true,
+          readAt: true,
         },
       },
     },
