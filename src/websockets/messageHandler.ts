@@ -70,7 +70,12 @@ export function broadcastNotification(
   });
 
   for (const clientData of clients.values()) {
-    if (clientData.conversationId !== message.conversationId && clientData.ws.readyState === 1) {
+    // Send to all clients NOT in this conversation AND not the sender
+    if (
+      clientData.conversationId !== message.conversationId &&
+      clientData.ws !== ws &&
+      clientData.ws.readyState === 1
+    ) {
       clientData.ws.send(notification);
     }
   }
