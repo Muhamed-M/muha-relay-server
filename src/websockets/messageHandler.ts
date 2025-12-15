@@ -1,7 +1,8 @@
 import type { ServerWebSocket } from 'bun';
 import logger from '../utils/logger';
-import { setConversationId, setUserId } from './clientManager';
+import { setConversationId, setUserId, getConnectedUserIds } from './clientManager';
 import { updateUserActivityStatus } from '../services/userService';
+import { sendPushToConversationMembers } from '../services/pushService';
 import type { ClientData, WebSocketData } from '../types/websocketTypes';
 
 export async function handleUserActivity(
@@ -40,11 +41,12 @@ export function handleConversationEnterLeave(
   setConversationId(ws, message.conversationId);
 }
 
-export function handleMessage(
+export async function handleMessage(
   ws: ServerWebSocket<WebSocketData>,
   message: any,
   clients: Map<ServerWebSocket<WebSocketData>, ClientData>
 ) {
+  // Send to connected WebSocket clients in the same conversation
   for (const clientData of clients.values()) {
     if (
       clientData.conversationId === message.conversationId &&
@@ -53,6 +55,25 @@ export function handleMessage(
     ) {
       clientData.ws.send(JSON.stringify({ type: 'message', ...message }));
     }
+  }
+
+  // Send push notifications to offline users
+  try {
+    const senderName = message.sender?.username || 'Someone';
+    await sendPushToConversationMembers(
+      message.conversationId,
+      message.senderId,
+      {
+        title: `${senderName}`,
+        body: message.content,
+        data: {
+          url: `/conversations/${message.conversationId}`,
+          conversationId: message.conversationId,
+        },
+      }
+    );
+  } catch (error) {
+    logger.error('Failed to send push notifications', error);
   }
 }
 

@@ -26,3 +26,13 @@ export function setUserId(ws: ServerWebSocket<WebSocketData>, userId: number) {
     clients.get(ws)!.userId = userId;
   }
 }
+
+export function getConnectedUserIds(): Set<number> {
+  const userIds = new Set<number>();
+  for (const clientData of clients.values()) {
+    if (clientData.userId > 0) {
+      userIds.add(clientData.userId);
+    }
+  }
+  return userIds;
+}
