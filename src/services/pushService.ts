@@ -5,11 +5,16 @@ import logger from '../utils/logger';
 const prisma = new PrismaClient();
 
 // Configure VAPID
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:example@example.com',
-  process.env.VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || ''
-);
+const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:example@example.com';
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || '';
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
+
+if (!vapidPublicKey || !vapidPrivateKey) {
+  logger.warn('[Push] VAPID keys not configured - push notifications will not work');
+} else {
+  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  logger.info('[Push] VAPID configured successfully');
+}
 
 export interface PushSubscriptionPayload {
   endpoint: string;
@@ -29,7 +34,8 @@ export interface PushNotificationPayload {
 }
 
 export const saveSubscription = async (userId: number, subscription: PushSubscriptionPayload) => {
-  return prisma.pushSubscription.upsert({
+  logger.info(`[Push] Saving subscription for user ${userId}`);
+  const result = await prisma.pushSubscription.upsert({
     where: { endpoint: subscription.endpoint },
     update: {
       p256dh: subscription.keys.p256dh,
@@ -44,6 +50,8 @@ export const saveSubscription = async (userId: number, subscription: PushSubscri
       userId,
     },
   });
+  logger.info(`[Push] Subscription saved with id ${result.id}`);
+  return result;
 };
 
 export const removeSubscription = async (endpoint: string) => {
@@ -120,6 +128,8 @@ export const sendPushToConversationMembers = async (
   excludeUserId: number,
   payload: PushNotificationPayload
 ) => {
+  logger.info(`[Push] Sending push to conversation ${conversationId} members (excluding user ${excludeUserId})`);
+
   // Get all members of the conversation except the sender
   const members = await prisma.conversationMember.findMany({
     where: {
@@ -130,8 +140,11 @@ export const sendPushToConversationMembers = async (
   });
 
   const userIds = members.map((m) => m.userId);
+  logger.info(`[Push] Found ${userIds.length} members to notify: ${userIds.join(', ')}`);
 
   if (userIds.length === 0) return { sent: 0, failed: 0 };
 
-  return sendPushToUsers(userIds, payload);
+  const result = await sendPushToUsers(userIds, payload);
+  logger.info(`[Push] Push result: ${result.sent} sent, ${result.failed} failed`);
+  return result;
 };
